@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="cs" class="scroll-smooth">
+<head>
+    <!-- Google Maps API key will be injected by backend as window.__GOOGLE_MAPS_API_KEY__ -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktivní Průvodce: Podzimní Dobrodružství v Jižní Koreji a Abu Dhabi 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Google Maps API - ZDE VLOŽTE SVŮJ GOOGLE MAPS API KLÍČ -->
+    <!-- Pro správnou funkci map je nutné nahradit 'YOUR_GOOGLE_MAPS_API_KEY' vaším platným API klíčem. -->
+    
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; color: #1f2937; }
+        .kpi-card { background-color: white; border-radius: 0.75rem; padding: 1.5rem; text-align: center; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .timeline-item { position: relative; padding-bottom: 2.5rem; padding-left: 2.5rem; }
+        .timeline-item:not(:last-child)::before { content: ''; position: absolute; left: 0.5rem; top: 0.75rem; width: 2px; height: 100%; background-color: #8DD7BF; }
+        .timeline-dot { position: absolute; left: 0; top: 0.5rem; height: 1.25rem; width: 1.25rem; border-radius: 9999px; background-color: #00A5E3; border: 3px solid white; }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; height: 300px; max-height: 350px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; max-height: 400px; } }
+        .tab-button.active { background-color: #00A5E3; color: white; border-color: #00A5E3; }
+        .details-content { max-height: 0; overflow: hidden; transition: max-height 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        .map-container { height: 300px; width: 100%; background-color: #e0e0e0; } /* Základní styl pro mapu */
+        /* Oprava pro sticky navigaci: Zajistí, aby se obsah posunul pod navigační lištu */
+        section[id] {
+            scroll-margin-top: 4rem; /* Upravte podle výšky vaší sticky hlavičky */
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #00A5E3;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Lightbox styles */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        .lightbox-caption {
+            color: white;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .close-lightbox {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        /* Custom Confirm Modal */
+        #custom-confirm-modal {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Login Modal - Zobrazí se automaticky při načtení stránky, dokud se uživatel nepřihlásí -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm text-center">
+            <h2 class="text-2xl font-bold mb-4" style="color: #002D62;">Přihlaste se</h2>
+            <form id="login-form-content">
+                <input type="email" id="email-input" placeholder="E-mail" class="w-full p-2 mb-2 border rounded" required>
+                <input type="password" id="password-input" placeholder="Heslo" class="w-full p-2 mb-2 border rounded" required>
+                <button type="submit" id="submit-login-btn" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg w-full mb-2">Přihlásit se</button>
+                <!-- Tlačítko pro registraci bylo odstraněno -->
+                <p id="login-error" class="text-red-500 text-sm mt-2"></p>
+            </form>
+            <div class="mt-4 border-t pt-4">
+                <button id="anonymous-login-btn-modal" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg w-full">Pokračovat anonymně</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm text-center">
+            <p id="confirm-message" class="text-lg mb-4">Are you sure?</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-yes" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg">Ano</button>
+                <button id="confirm-no" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg">Ne</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm text-center">
+            <p id="alert-message" class="text-lg mb-4">Alert message.</p>
+            <button id="alert-ok" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg">OK</button>
+        </div>
+    </div>
+
+    <!-- Hlavní obsah stránky - Zpočátku skrytý -->
+    <div id="main-content" class="container mx-auto p-4 md:p-8 hidden">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black mb-2" style="color: #002D62;">Podzimní Dobrodružství v Jižní Koreji a Abu Dhabi</h1>
+            <p class="text-lg md:text-xl text-gray-600">Váš interaktivní průvodce na míru (6. – 21. října 2025)</p>
+            <div class="flex justify-center items-center mt-4 space-x-4">
+                <p id="user-id-display" class="text-sm text-gray-500">Načítání uživatele...</p>
+                <!-- Tlačítko pro zobrazení přihlašovacího formuláře (zobrazí se po odhlášení nebo pro anonymní uživatele) -->
+                <button id="show-login-form-btn" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded-full hidden">Přihlásit se</button>
+                <!-- Tlačítko pro odhlášení (zobrazí se pro uživatele přihlášené e-mailem) -->
+                <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-full hidden">Odhlásit se</button>
+            </div>
+        </header>
+
+        <nav class="sticky top-0 bg-white/80 backdrop-blur-sm z-10 py-3 mb-12 rounded-lg shadow-md">
+            <ul class="flex justify-center space-x-4 md:space-x-8">
+                <li><a href="#overview" class="font-bold text-gray-600 hover:text-blue-600 transition">Přehled</a></li>
+                <li><a href="#planning" class="font-bold text-gray-600 hover:text-blue-600 transition">Příprava</a></li>
+                <li><a href="#itinerary" class="font-bold text-gray-600 hover:text-blue-600 transition">Itinerář</a></li>
+                <li><a href="#budget" class="font-bold text-gray-600 hover:text-blue-600 transition">Celkový Rozpočet</a></li>
+            </ul>
+        </nav>
+
+        <section id="overview" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8" style="color: #002D62;">Cesta v Kostce</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="kpi-card"><div class="text-5xl mb-2">🗓️</div><h3 class="text-xl font-bold">16 Dní</h3><p class="text-gray-500">Kultury, přírody a K-Popu</p></div>
+                <div class="kpi-card"><div class="text-5xl mb-2">🏙️</div><h3 class="text-xl font-bold">5 Destinací</h3><p class="text-gray-500">Abu Dhabi, Soul, Pusan, Gyeongju, Čedžu</p></div>
+                <div class="kpi-card"><div class="text-5xl mb-2">👨‍👩‍👧</div><h3 class="text-xl font-bold">3 Cestovatelé</h3><p class="text-gray-500">Rodinný zážitek na míru</p></div>
+                <div class="kpi-card"><div class="text-5xl mb-2">💰</div><h3 class="text-xl font-bold">&lt; 45 000 Kč</h3><p class="text-gray-500">Rozpočet na osobu</p></div>
+            </div>
+             <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <p class="text-center text-gray-600 max-w-3xl mx-auto">Vítejte ve vašem osobním interaktivním průvodci pro nezapomenutelné cestu do Jižní Koreje a Abu Dhabi! Tato aplikace je navržena tak, aby vám poskytla všechny potřebné informace v přehledné a vizuálně poutavé formě. Od hlavních statistik vaší cesty přes praktické tipy až po detailní denní itinerář a analýzu rozpočtu – vše máte na jednom místě. Prozkoumejte plán, rozklikněte si detaily a připravte se na dobrodružství plné kultury, historie a moderních zážitků, které čeká jen na vás.</p>
+             </div>
+        </section>
+
+        <section id="planning" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8" style="color: #002D62;">Než Vyrazíte: Klíčové Informace</h2>
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <div class="mb-4 border-b border-gray-200">
+                    <div class="flex flex-wrap -mb-px" id="info-tabs">
+                        <button class="tab-button active mr-2 inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="visa">Vstup & Víza</button>
+                        <button class="tab-button mr-2 inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="money">Měna & Platby</button>
+                        <button class="tab-button mr-2 inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="weather">Počasí & Balení</button>
+                        <button class="tab-button mr-2 inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="etiquette">Etiketa</button>
+                        <button class="tab-button inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="holidays">Svátky</button>
+                    </div>
+                </div>
+                <div id="tab-content">
+                    <div class="tab-pane active p-4" id="visa-content">
+                        <h3 class="text-xl font-bold mb-2">Vstupní Požadavky</h3>
+                        <p class="mb-2">Pro občany ČR platí do 31. 12. 2025 výjimka z povinnosti mít K-ETA pro Jižní Koreu, což šetří čas i poplatek 10 000 KRW.</p>
+                        <p class="mb-2"><strong>Novinka pro Koreu:</strong> Od 24. 2. 2025 je povinné vyplnit online elektronickou příjezdovou kartu (e-Arrival Card) nejpozději 3 dny před příletem. Je zdarma a platí 72 hodin.</p>
+                        <p class="mb-2"><strong>Pro Spojené arabské emiráty (Abu Dhabi):</strong> Občané ČR nepotřebují vízum pro turistické pobyty do 90 dnů.</p>
+                        <p>Platnost pasu musí být minimálně 6 měsíců po plánovaném návratu. Pas je nutné mít s sebou na prohlídku DMZ.</p>
+                    </div>
+                    <div class="tab-pane hidden p-4" id="money-content">
+                        <h3 class="text-xl font-bold mb-2">Měna a Platby</h3>
+                        <p class="mb-2">Místní měnou v Koreji je korejský won (KRW). V Abu Dhabi je to emirátský dirham (AED).</p>
+                        <p class="mb-2">Pro rozpočet je použit kurz 1 CZK = 50,67 KRW a 1 AED = 6,2 CZK.</p>
+                        <p class="mb-2">Kreditní karty jsou široce přijímány, ale hotovost je nutná na trzích a v menších podnicích.</p>
+                        <p class="mb-2"><strong>Spropitné není zvykem v Koreji</strong> a může být považováno za urážlivé. V Abu Dhabi je spropitné očekáváno v restauracích a pro služby.</p>
+                        <p><strong>Karta T-Money (Korea)</strong> je nezbytná pro místní dopravu. Šetří 100 KRW na každé jízdě a umožňuje slevy na přestupy.</p>
+                    </div>
+                    <div class="tab-pane hidden p-4" id="weather-content">
+                        <h3 class="text-xl font-bold mb-2">Říjnové Počasí a Balení</h3>
+                        <p class="mb-2"><strong>Korea:</strong> Říjen nabízí ideální počasí: v Soulu průměrně 9-20°C, slunečno a málo srážek. Perfektní čas pro pozorování podzimního listí.</p>
+                        <p class="mb-2"><strong>Abu Dhabi:</strong> V říjnu se teploty pohybují kolem 25-35°C, je slunečno a sucho. Očekávejte horké dny a teplé večery.</p>
+                        <p class="mb-2"><strong>Doporučené oblečení:</strong> Kvůli rozdílům teplot mezi destinacemi je klíčové vrstvení. Zabalte lehké, prodyšné oblečení pro Abu Dhabi (s ohledem na místní zvyklosti – zakrytá ramena a kolena pro ženy na veřejnosti a v mešitách) a trička, mikiny, svetry a lehkou bundu pro Koreu.</p>
+                        <p>Nezapomeňte na pohodlnou obuv a případně roušky kvůli "žlutému prachu" v Koreji.</p>
+                    </div>
+                     <div class="tab-pane hidden p-4" id="etiquette-content">
+                        <h3 class="text-xl font-bold mb-2">Kulturní Etiketa</h3>
+                        <p class="mb-2"><strong>Korea:</strong> Mírná úklona je standardní pozdrav. Při podání ruky podepřete pravé předloktí levou rukou. Vždy používejte obě ruce při předávání předmětů. Vždy si zujte boty při vstupu do domů, chrámů a některých restaurací. Nenalévejte si vlastní nápoj, ale nabídněte ostatním. Hůlky nikdy nenechávejte zapíchnuté v rýži.</p>
+                        <p><strong>Abu Dhabi:</strong> Oblékejte se skromně, zejména při návštěvě náboženských míst (ženy zakrytá ramena, kolena a vlasy). Při podávání ruky počkejte, až vám žena nabídne ruku. Vyhněte se projevům náklonnosti na veřejnosti. Během ramadánu (pokud by se shodoval s vaší návštěvou) se vyhněte jídlu a pití na veřejnosti během dne.</p>
+                    </div>
+                     <div class="tab-pane hidden p-4" id="holidays-content">
+                        <h3 class="text-xl font-bold mb-2">Státní Svátky v Říjnu</h3>
+                        <p class="mb-2">Váš příjezd (8. října) se shoduje s koncem svátku <strong>Chuseok</strong> (5.–8. října). Očekávejte zvýšenou dopravu při cestě z letiště. Itinerář je navržen tak, aby se vyhnul meziměstským přesunům v tomto období.</p>
+                        <p><strong>Den Hangul</strong> (9. října) je další státní svátek v Koreji. Hlavní turistické atrakce jsou obvykle otevřené a mohou se konat speciální kulturní akce.</p>
+                        <p>V Abu Dhabi v říjnu nejsou obvykle žádné velké státní svátky, ale vždy je dobré zkontrolovat aktuální kalendář před cestou.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="itinerary" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8" style="color: #002D62;">Váš Interaktivní Itinerář</h2>
+            <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">Níže naleznete detailní plán vaší cesty den po dni. Každou položku můžete rozkliknout a zobrazit si podrobnosti o aktivitách, dopravě, užitečné odkazy a mapu s vyznačenými body zájmu.</p>
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                <div class="relative" id="timeline-container">
+                </div>
+            </div>
+        </section>
+
+        <section id="budget" class="mb-16">
+             <h2 class="text-3xl font-bold text-center mb-8" style="color: #002D62;">Celková Analýza Rozpočtu</h2>
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container">
+                        <canvas id="budgetDonutChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="costBarChart"></canvas>
+                    </div>
+                 </div>
+                 <div class="text-center mt-8">
+                    <p class="text-lg text-gray-600">Celkový odhadovaný náklad na osobu</p>
+                    <p class="text-5xl md:text-6xl font-black my-2" style="color: #00A5E3;" id="estimated-cost-display">0 Kč</p>
+                    <p class="text-lg font-bold" id="budget-status-text"></p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-500 mt-12">
+            <p>Tento interaktivní průvodce byl vytvořen na míru pro vaše podzimní dobrodružství.</p>
+        </footer>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox hidden">
+        <span id="close-lightbox" class="close-lightbox">&times;</span>
+        <img id="lightbox-img" class="lightbox-content" alt="Full size image">
+        <div id="lightbox-caption" class="lightbox-caption"></div>
+    </div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        // Global Firebase Variables
+        let app, db, auth, storage;
+        let currentUserId = null;
+        let isAuthReady = false;
+        let isUserAnonymous = false;
+        let currentBudgetItemToEdit = null; // For budget edit functionality
+        let currentDiaryEntryToEdit = null; // For diary edit functionality
+
+        // Global variables provided by Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // Directly use the Firebase config provided by the user in their query
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCWJKVLVBsBxOf-AZZb6J7RMNY08TAdKs",
+            authDomain: "korea-72af1.firebaseapp.com",
+            projectId: "korea-72af1",
+            storageBucket: "korea-72af1.firebasestorage.app",
+            messagingSenderId: "496424582320",
+            appId: "1:496424582320:web:a8baa803280cdf5a6bcf75"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        /*
+        // DŮLEŽITÉ: Následující pravidla MUSÍTE nastavit ve své konzoli Firebase!
+        // Tím se vyřeší chyby oprávnění.
+
+        // Pravidla pro Firestore Database:
+        // (Nastavte v 'Firestore Database' -> 'Rules')
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            // Pravidla pro VEŘEJNÁ data (deník, rozpočet)
+            // Kdokoli přihlášený (včetně anonymních) může číst.
+            // Zápis a mazání je povoleno POUZE vlastníkovi záznamu.
+            // Nová cesta: artifacts/{appId}/public/data/{collection}/{documentId}
+            match /artifacts/{appId}/public/data/{collection}/{documentId} {
+              allow read: if request.auth != null;
+              // Uživatel může zapisovat/mazat pouze pokud je vlastníkem dokumentu
+              allow write: if request.auth != null && request.auth.uid == request.resource.data.ownerId;
+            }
+
+            // Pravidla pro SOUKROMÁ data (pokud byste je chtěli v budoucnu přidat)
+            // Uživatel může číst a zapisovat pouze svá vlastní data
+            match /artifacts/{appId}/users/{userId}/{collection=**} {
+              allow read: if request.auth != null && request.auth.uid == userId;
+              allow write: if request.auth != null && request.auth.uid == userId;
+            }
+          }
+        }
+
+        // Pravidla pro Firebase Cloud Storage:
+        // (Nastavte v 'Storage' -> 'Rules')
+        rules_version = '2';
+        service firebase.storage {
+          match /b/{bucket}/o {
+            // Pravidla pro fotografie itineráře (veřejné čtení, zápis/mazání pouze vlastníkem)
+            match /artifacts/{appId}/public/photos/{photoId} {
+              allow read: if request.auth != null; // Povolit čtení pouze pro přihlášené uživatele
+              // Zápis/Mazání: Povoleno pouze pro uživatele, kteří jsou vlastníky souboru.
+              allow write: if request.auth != null && request.auth.uid == request.resource.metadata.ownerId;
+            }
+          }
+        }
+        */
+
+        // Itinerary Data
+        const itineraryData = [
+            { day: 1, date: "Pondělí, 6. října", title: "Přílet do Abu Dhabi a aklimatizace",
+              details: "Přílet na mezinárodní letiště Abu Dhabi (AUH) v 19:05. Po imigrační kontrole transfer do hotelu. Ubytování a odpočinek po cestě.",
+              transport: "<strong>Taxi:</strong> Nejpohodlnější způsob z letiště do hotelu. Cena cca 80-100 AED (500-620 CZK).",
+              links: {},
+              mapData: {
+                  center: { lat: 24.4093, lng: 54.4377 }, // Pearl Rotana
+                  zoom: 12,
+                  markers: [
+                      { lat: 24.4330, lng: 54.6511, title: "Letiště Abu Dhabi (AUH)", description: "Mezinárodní letiště Abu Dhabi." },
+                      { lat: 24.4093, lng: 54.4377, title: "Pearl Rotana Capital Centre (Ubytování)", description: "Váš hotel v Abu Dhabi." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Pearl Rotana Capital Centre. Ubytování je zdarma jako bonus od aerolinek."
+            },
+            { day: 2, date: "Úterý, 7. října", title: "To nejlepší z Abu Dhabi",
+              details: "Celodenní průzkum Abu Dhabi. Dopoledne: Návštěva Velké mešity šejka Zayeda – architektonický skvost (vstup zdarma, nutné dodržet dress code). Oběd. Odpoledne: Prohlídka Louvre Abu Dhabi – unikátní muzeum umění a civilizací. Pozdní odpoledne: Návštěva Qasr Al Watan (Prezidentský palác) – poznání bohaté historie a kultury SAE.",
+              transport: "<strong>Taxi/Careem/Uber:</strong> Nejefektivnější způsob dopravy mezi atrakcemi v Abu Dhabi. Ceny se liší dle vzdálenosti.",
+              links: { "Velká mešita šejka Zayeda": "https://www.szgmc.gov.ae/en/", "Louvre Abu Dhabi": "https://www.louvreabudhabi.ae/", "Qasr Al Watan": "https://www.qasralwatan.ae/" },
+              mapData: {
+                  center: { lat: 24.4123, lng: 54.4673 }, // Mešita
+                  zoom: 11,
+                  markers: [
+                      { lat: 24.4123, lng: 54.4673, title: "Velká mešita šejka Zayeda", description: "Jedna z největších mešit na světě." },
+                      { lat: 24.5247, lng: 54.3970, title: "Louvre Abu Dhabi", description: "Muzeum umění a civilizací." },
+                      { lat: 24.4600, lng: 54.3750, title: "Qasr Al Watan", description: "Prezidentský palác SAE." },
+                      { lat: 24.4093, lng: 54.4377, title: "Pearl Rotana Capital Centre (Ubytování)", description: "Váš hotel v Abu Dhabi." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Pearl Rotana Capital Centre. Ubytování je zdarma jako bonus od aerolinek."
+            },
+            { day: 3, date: "Středa, 8. října", title: "Odlet z Abu Dhabi do Soulu",
+              details: "Ráno: Brzký check-out z hotelu. Transfer na mezinárodní letiště Abu Dhabi (AUH). Odlet z AUH do Soulu (ICN) v 08:35. Let trvá přibližně 8-9 hodin. Přílet do Soulu (ICN) bude kolem 17:35 KST (korejského času).",
+              transport: "<strong>Taxi:</strong> Z hotelu na letiště. Cena cca 80-100 AED (500-620 CZK).",
+              links: {},
+              mapData: {
+                  center: { lat: 24.4330, lng: 54.6511 }, // Letiště AUH
+                  zoom: 12,
+                  markers: [
+                      { lat: 24.4093, lng: 54.4377, title: "Pearl Rotana Capital Centre (Check-out)", description: "Váš hotel v Abu Dhabi." },
+                      { lat: 24.4330, lng: 54.6511, title: "Letiště Abu Dhabi (AUH)", description: "Mezinárodní letiště Abu Dhabi." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Pearl Rotana Capital Centre. Ubytování je zdarma jako bonus od aerolinek."
+            },
+            { day: 4, date: "Středa, 8. října", title: "Přílet do Soulu a aklimatizace",
+              details: "Přílet na mezinárodní letiště Incheon (ICN) kolem 17:35 KST (korejského času) z Abu Dhabi. Po imigrační kontrole (předem vyplněná e-Arrival Card) transfer do hotelu. Vzhledem k pozdní hodině doporučujeme letištní taxi nebo vlak AREX. Ubytování a odpočinek.",
+              transport: "<strong>Letištní taxi:</strong> Pevné sazby do centra (cca 85k-95k KRW).<br><strong>Vlak AREX:</strong> Express (40 min, 9.5k KRW), All-Stop (60 min, ~4.5k KRW).",
+              links: { "Vlak AREX": "https://www.arex.or.kr/main.do", "T-Money karta": "https://www.t-money.co.kr/ncs/pct/tmnyintd/ReadTmyIntdPage.dev" },
+              mapData: {
+                  center: { lat: 37.5724, lng: 127.0094 }, // Soul N Guesthouse Dongdaemoon
+                  zoom: 14,
+                  markers: [
+                      { lat: 37.4562, lng: 126.8226, title: "Letiště Incheon (ICN)", description: "Mezinárodní letiště Incheon." },
+                      { lat: 37.5724, lng: 127.0094, title: "Seoul N Guesthouse Dongdaemoon (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seoul N Guesthouse Dongdaemoon, 21, Jong-ro 66ga-gil, Jongno-gu, Jongno-Gu, 03115 Soul, Jižní Korea (Check-in 8.10.2025, Check-out 12.10.2025, Cena: 5180 CZK)."
+            },
+            { day: 5, date: "Čtvrtek, 9. října (Den Hangul)", title: "Královská nádhera a tradiční vesnice",
+              details: "Dopoledne: Návštěva paláce Gyeongbokgung. Zapůjčení Hanboku (tradiční oděv) zajistí volný vstup a jedinečný zážitek. Odpoledne: Procházka do tradiční vesnice Bukchon Hanok. Pozdní odpoledne: Návštěva Národního muzea Hangul. Večer: Večeře v Insadongu.",
+              transport: "Využívejte primárně <strong>metro</strong> s kartou T-Money. Stanice Gyeongbokgung (linka 3).",
+              links: { "Palác Gyeongbokgung": "https://english.cha.go.kr/html/HtmlPage.do?pg=palace/Gyeongbokgung/Gyeongbokgung.jsp&mn=EN_02_02_01", "Národní muzeum Hangul": "https://www.hangeul.go.kr/en/" },
+              mapData: {
+                  center: { lat: 37.5800, lng: 126.9769 }, // Oblast paláce a vesnice
+                  zoom: 14,
+                  markers: [
+                      { lat: 37.5797, lng: 126.9769, title: "Palác Gyeongbokgung", description: "Hlavní královský palác dynastie Joseon." },
+                      { lat: 37.5826, lng: 126.9837, title: "Vesnice Bukchon Hanok", description: "Tradiční korejská vesnice s historickými domy Hanok." },
+                      { lat: 37.5780, lng: 126.9769, title: "Národní muzeum Hangul", description: "Muzeum věnované korejskému písmu Hangul." },
+                      { lat: 37.5721, lng: 126.9860, title: "Insadong", description: "Oblast známá pro tradiční umění a suvenýry." },
+                      { lat: 37.5724, lng: 127.0094, title: "Seoul N Guesthouse Dongdaemoon (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seoul N Guesthouse Dongdaemoon"
+            },
+            { day: 6, date: "Pátek, 10. října", title: "K-kultura: Pop, krása a kuchyně",
+              details: "Dopoledne: Návštěva sídla JYP Entertainment (pouze exteriér), poté nákupy K-Pop zboží v Myeongdongu (MusicKorea) nebo Hongdae (Withmuu, Pocaspot). Odpoledne: Průzkum ráje K-Beauty v Myeongdongu. Večer: Volitelný kurz korejského vaření.",
+              transport: "Přesuny mezi čtvrtěmi pomocí <strong>metra</strong>.",
+              links: { "Seoul Cooking Club": "https://www.seoulcookingclub.com/" },
+              mapData: {
+                  center: { lat: 37.5598, lng: 126.9860 }, // Myeongdong
+                  zoom: 13,
+                  markers: [
+                      { lat: 37.5615, lng: 126.9904, title: "Myeongdong", description: "Nákupní čtvrť, centrum K-Beauty a K-Popu." },
+                      { lat: 37.5559, lng: 126.9369, title: "Hongdae", description: "Mladistvá čtvrť s uměním, hudbou a kavárnami." },
+                      { lat: 37.5665, lng: 126.9780, title: "Seoul Cooking Club", description: "Škola vaření (přibližná poloha)." }, // Přesná poloha se může lišit
+                      { lat: 37.5724, lng: 127.0094, title: "Seoul N Guesthouse Dongdaemoon (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seoul N Guesthouse Dongdaemoon"
+            },
+            { day: 7, date: "Sobota, 11. října", title: "DMZ a podzimní kouzlo ostrova Nami",
+              details: "Celodenní výlet. Dopoledne: Půldenní prohlídka DMZ ze Soulu (rezervovat předem, nutný pas!). Odpoledne: Cesta na malebný ostrov Nami, proslulý podzimním listím.",
+              transport: "<strong>DMZ:</strong> Organizovaný výlet s autobusovou dopravou.<br><strong>Ostrov Nami:</strong> Přímý autobus z Insadongu nebo vlak ITX do Gapyeong Station a následně místní doprava (bus/taxi) k trajektu.",
+              links: { "DMZ Tour (doporučení)": "https://www.vviptravel.com/dmz-tours", "Ostrov Nami": "https://www.namisum.com/en/" },
+              mapData: {
+                  center: { lat: 37.8967, lng: 127.0097 }, // Oblast DMZ
+                  zoom: 9,
+                  markers: [
+                      { lat: 37.9567, lng: 126.7380, title: "DMZ (Demilitarizovaná zóna)", description: "Hranice mezi Severní a Jižní Koreou." },
+                      { lat: 37.7946, lng: 127.5250, title: "Ostrov Nami", description: "Malebný ostrov proslulý podzimním listím." },
+                      { lat: 37.5724, lng: 127.0094, title: "Seoul N Guesthouse Dongdaemoon (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seoul N Guesthouse Dongdaemoon"
+            },
+            { day: 8, date: "Neděle, 12. října", title: "Check-out ze Soulu a cesta do Pusanu",
+              details: "Dopoledne: Check-out z ubytování v Soulu. Přesun vysokorychlostním vlakem KTX ze Soulu do Pusanu. Odpoledne: Ubytování v Pusanu. Večer: Relaxační procházka po pláži Haeundae.",
+              transport: "<strong>KTX vlak:</strong> Cca 2.5h, rezervovat s předstihem.",
+              links: { "Rezervace KTX (Korail)": "https://www.letskorail.com/ebizbf/EbizbfForeign_pr16100.do", "Turismus Pusan": "https://www.visitbusan.net/en/" },
+              mapData: {
+                  center: { lat: 35.1666, lng: 129.1666 }, // Pusan
+                  zoom: 12,
+                  markers: [
+                      { lat: 37.5724, lng: 127.0094, title: "Seoul N Guesthouse Dongdaemoon (Check-out)", description: "Vaše ubytování v Soulu." },
+                      { lat: 35.1557, lng: 129.0597, title: "Seomyeon Brown-dot hotel Gold (Ubytování)", description: "Vaše ubytování v Pusanu." },
+                      { lat: 35.1633, lng: 129.1650, title: "Pláž Haeundae", description: "Jedna z nejznámějších pláží v Pusanu." },
+                      { lat: 35.1158, lng: 129.0390, title: "Pusan Station (KTX)", description: "Hlavní vlakové nádraží v Pusanu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seomyeon Brown-dot hotel Gold, 20-11, Hwangnyeong-daero 7beon-gil, Busanjin-gu, Busanjin-Gu, 47353 Pusan, Jižní Korea (Příjezd 12.10.2025, Odjezd 15.10.2025, Cena: 4730 CZK)."
+            },
+            { day: 9, date: "Pondělí, 13. října", title: "Umění a chutě Pusanu",
+              details: "Dopoledne: Návštěva barevné kulturní vesnice Gamcheon. Oběd: Čerstvé mořské plody na rušném rybím trhu Jagalchi. Odpoledne: Nákupy a pouliční jídlo v Nampo-dongu. Večer: Autentické korejské BBQ nebo populární 'Chimaek'.",
+              transport: "Využití místního <strong>metra a autobusů</strong>.",
+              links: {},
+              mapData: {
+                  center: { lat: 35.0990, lng: 129.0100 }, // Oblast Gamcheon
+                  zoom: 14,
+                  markers: [
+                      { lat: 35.0990, lng: 129.0100, title: "Kulturní vesnice Gamcheon", description: "Barevná vesnice na kopci s uměleckými instalacemi." },
+                      { lat: 35.0980, lng: 129.0270, title: "Rybí trh Jagalchi", description: "Největší rybí trh v Koreji." },
+                      { lat: 35.0970, lng: 129.0290, title: "Nampo-dong", description: "Nákupní a zábavní čtvrť v Pusanu." },
+                      { lat: 35.1557, lng: 129.0597, title: "Seomyeon Brown-dot hotel Gold (Ubytování)", description: "Vaše ubytování v Pusanu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seomyeon Brown-dot hotel Gold"
+            },
+            { day: 10, date: "Úterý, 14. října", title: "Jednodenní výlet do Gyeongju",
+              details: "Celodenní výlet vlakem KTX do Gyeongju, 'muzea bez zdí'. Návštěva památek UNESCO: chrám Bulguksa, jeskyně Seokguram a královské hrobky v parku Tumuli. Večer návrat do Pusanu.",
+              transport: "Krátká cesta (cca 30 min) <strong>vlakem KTX</strong> z Busan Station.",
+              links: { "Historické oblasti Gyeongju": "https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=140669" },
+              mapData: {
+                  center: { lat: 35.8437, lng: 129.2173 }, // Gyeongju
+                  zoom: 11,
+                  markers: [
+                      { lat: 35.7950, lng: 129.3300, title: "Chrám Bulguksa", description: "Buddhistický chrám UNESCO." },
+                      { lat: 35.7800, lng: 129.3400, title: "Jeskyně Seokguram", description: "Jeskynní svatyně UNESCO s Buddhou." },
+                      { lat: 35.8360, lng: 129.2150, title: "Park Tumuli (Daereungwon)", description: "Park s královskými hrobkami." },
+                      { lat: 35.1557, lng: 129.0597, title: "Seomyeon Brown-dot hotel Gold (Ubytování)", description: "Vaše ubytování v Pusanu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "Seomyeon Brown-dot hotel Gold"
+            },
+            { day: 11, date: "Středa, 15. října", title: "Cesta na ostrov Čedžu",
+              details: "Dlouhý cestovní den. Dopoledne: Cesta autobusem z Pusanu do Wando. Odpoledne: Trajekt z přístavu Wando na ostrov Čedžu. Večer: Příjezd na Čedžu, transfer do hotelu.",
+              transport: "<strong>Expresní autobus</strong> Pusan -> Wando (cca 4.5h).<br><strong>Trajekt Hanil Express</strong> Wando -> Čedžu (cca 1.5-3h). Nutné potvrdit jízdní řád den předem!",
+              links: { "Rezervace trajektu": "http://www.ferryto.com/hanilexpress.html" },
+              mapData: {
+                  center: { lat: 34.3200, lng: 126.7000 }, // Mezi Wando a Jeju
+                  zoom: 8,
+                  markers: [
+                      { lat: 35.1557, lng: 129.0597, title: "Seomyeon Brown-dot hotel Gold (Check-out)", description: "Vaše ubytování v Pusanu." },
+                      { lat: 34.3160, lng: 126.7570, title: "Přístav Wando", description: "Přístav pro trajekty na Čedžu." },
+                      { lat: 33.5141, lng: 126.5295, title: "Přístav Čedžu", description: "Hlavní přístav na ostrově Čedžu." },
+                      { lat: 33.5097, lng: 126.5219, title: "I-Jin Hotel (Ubytování)", description: "Vaše ubytování na ostrově Čedžu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "I-Jin Hotel, 4, Sindae-ro 22-gil, Jeju City, 63136 Čedžu, Jižní Korea (Příjezd 15.10.2025, Odjezd 18.10.2025, Cena: 6430 CZK)."
+            },
+            { day: 12, date: "Čtvrtek, 16. října", title: "Přírodní divy Čedžu - Hallasan",
+              details: "Dopoledne: Túra v národním parku Hallasan, nejvyšší hoře Jižní Koreje. Doporučují se snazší stezky (Yeongsil, Eorimok). Odpoledne: Návštěva lávové jeskyně Manjanggul. Volitelně pro neteř: Návštěva tematického parku jako Snoopy Garden.",
+              transport: "Využití místních <strong>autobusů nebo taxi</strong>.",
+              links: { "NP Hallasan": "https://www.jeju.go.kr/hallasan/index.do" },
+              mapData: {
+                  center: { lat: 33.3625, lng: 126.5330 }, // Hallasan
+                  zoom: 10,
+                  markers: [
+                      { lat: 33.3625, lng: 126.5330, title: "Hora Hallasan", description: "Nejvyšší hora Jižní Koreje a národní park." },
+                      { lat: 33.5280, lng: 126.7690, title: "Jeskyně Manjanggul", description: "Jedna z nejdelších lávových trubic na světě." },
+                      { lat: 33.4570, lng: 126.7320, title: "Snoopy Garden", description: "Tematický park Snoopy." },
+                      { lat: 33.5097, lng: 126.5219, title: "I-Jin Hotel (Ubytování)", description: "Vaše ubytování na ostrově Čedžu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "I-Jin Hotel"
+            },
+            { day: 13, date: "Pátek, 17. října", title: "Východní pobřeží Čedžu a čajové muzeum",
+              details: "Dopoledne: Výstup na sopečný kužel Seongsan Ilchulbong (UNESCO). Odpoledne: Návštěva vodopádů Jeongbang. Pozdní odpoledne: Návštěva čajového muzea O'Sulloc, kde se dozvíte o historii korejského čaje a ochutnáte místní speciality. Večer: Odpočinek na malebné pláži Woljeongri nebo Hamdeok.",
+              transport: "Pro přesun k O'Sulloc Tea Museum z Jeju City (kde je váš hotel) použijte <strong>Red Express Bus linku 151</strong> z Jeju Bus Terminal. Cesta trvá přibližně 50-52 minut a stojí 2 100 - 2 700 KRW. Pro ostatní přesuny po ostrově využívejte místní <strong>autobusy nebo taxi</strong>, ideálně s aplikacemi KakaoMap nebo Naver Map.",
+              links: { "Muzeum O'Sulloc": "https://www.osulloc.com/kr/ko/museum" },
+              mapData: {
+                  center: { lat: 33.4350, lng: 126.9400 }, // Seongsan
+                  zoom: 11,
+                  markers: [
+                      { lat: 33.4583, lng: 126.9427, title: "Seongsan Ilchulbong", description: "Sopečný kráter UNESCO s úchvatnými výhledy." },
+                      { lat: 33.2450, lng: 126.5650, title: "Vodopády Jeongbang", description: "Vodopády padající přímo do oceánu." },
+                      { lat: 33.3030, lng: 126.2880, title: "Muzeum O'Sulloc", description: "Muzeum čaje s čajovými plantážemi." },
+                      { lat: 33.5570, lng: 126.7800, title: "Pláž Woljeongri", description: "Krásná pláž s tyrkysovou vodou." },
+                      { lat: 33.5410, lng: 126.6660, title: "Pláž Hamdeok", description: "Oblíbená pláž s bílým pískem." },
+                      { lat: 33.5097, lng: 126.5219, title: "I-Jin Hotel (Ubytování)", description: "Vaše ubytování na ostrově Čedžu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "I-Jin Hotel"
+            },
+            { day: 14, date: "Sobota, 18. října", title: "Návrat do Soulu a volný program",
+              details: "Dopoledne: Vnitrostátní let z Čedžu (CJU) do Soulu (GMP, ~1h 10m). Odpoledne: Po ubytování volný program. Můžete se vrátit na oblíbená nákupní místa nebo prozkoumat novou čtvrť.",
+              transport: "<strong>Vnitrostátní let</strong> (rezervovat s předstihy).",
+              links: {},
+              mapData: {
+                  center: { lat: 37.5665, lng: 126.9780 }, // Soul
+                  zoom: 11,
+                  markers: [
+                      { lat: 33.5141, lng: 126.4930, title: "Letiště Čedžu (CJU)", description: "Letiště na ostrově Čedžu." },
+                      { lat: 37.5580, lng: 126.7940, title: "Letiště Gimpo (GMP)", description: "Vnitrostátní letiště v Soulu." },
+                      { lat: 37.5665, lng: 126.9780, title: "Centrum Soulu", description: "Oblast ubytování v Soulu." },
+                      { lat: 37.5658, lng: 127.0084, title: "K-Guesthouse Dongdaemun Premium (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "K-Guesthouse Dongdaemun Premium, 213, Jangchungdan-ro, Jung-gu, Jung-Gu, 04615 Soul, Jižní Korea (Příjezd 18.10.2025, Odjezd 21.10.2025, Cena: 4197 CZK)."
+            },
+            { day: 15, date: "Neděle, 19. října", title: "Poslední kulturní zážitky",
+              details: "Dopoledne: Procházka čtvrtí Insadong, nákup tradičních suvenýrů. Volitelně: Vyzkoušejte klidný čajový obřad. Odpoledne: Výlet lanovkou na N Seoul Tower pro dechberoucí výhled. Večer: Slavnostní rozlučková večeře – tradiční Hanjeongsik nebo pouliční jídlo v Myeongdongu.",
+              transport: "Využití místního <strong>metra a lanovky</strong>.",
+              links: { "N Seoul Tower": "https://www.seoultower.co.kr/eng/" },
+              mapData: {
+                  center: { lat: 37.5500, lng: 126.9880 }, // N Seoul Tower
+                  zoom: 13,
+                  markers: [
+                      { lat: 37.5721, lng: 126.9860, title: "Insadong", description: "Oblast s tradičními suvenýry a čajovnami." },
+                      { lat: 37.5512, lng: 126.9882, title: "N Seoul Tower", description: "Věž s panoramatickým výhledem na Soul." },
+                      { lat: 37.5615, lng: 126.9904, title: "Myeongdong", description: "Oblast pro večeři a pouliční jídlo." },
+                      { lat: 37.5658, lng: 127.0084, title: "K-Guesthouse Dongdaemun Premium (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "K-Guesthouse Dongdaemun Premium"
+            },
+            { day: 16, date: "Pondělí, 20. října", title: "Volný den a poslední nákupy",
+              details: "Celý den je vyhrazen pro flexibilní aktivity. Ideální pro nákupy K-Pop a K-Beauty dárků na poslední chvíli, návštěvu muzea, které jste nestihli, nebo jen relaxaci.",
+              transport: "Využití <strong>metra a autobusů</strong>.",
+              links: {},
+              mapData: {
+                  center: { lat: 37.5665, lng: 126.9780 }, // Soul
+                  zoom: 12,
+                  markers: [
+                      { lat: 37.5665, lng: 126.9780, title: "Soul", description: "Volný den v Soulu." },
+                      { lat: 37.5658, lng: 127.0084, title: "K-Guesthouse Dongdaemun Premium (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "K-Guesthouse Dongdaemun Premium"
+            },
+            { day: 17, date: "Úterý, 21. října", title: "Odlet domů",
+              details: "Dopoledne: Poslední korejská snídaně a balení. Odpoledne: Včasný transfer na letiště Incheon (ICN) s dostatečnou rezervou pro odlet v 18:30.",
+              transport: "<strong>Vlak AREX</strong> nebo <strong>letištní autobus</strong> na letiště ICN.",
+              links: {},
+              mapData: {
+                  center: { lat: 37.4562, lng: 126.8226 }, // Letiště Incheon
+                  zoom: 10,
+                  markers: [
+                      { lat: 37.4562, lng: 126.8226, title: "Letiště Incheon (ICN)", description: "Mezinárodní letiště Incheon." },
+                      { lat: 37.5658, lng: 127.0084, title: "K-Guesthouse Dongdaemun Premium (Ubytování)", description: "Vaše ubytování v Soulu." }
+                  ]
+              },
+              mapInitialized: false,
+              hotel: "K-Guesthouse Dongdaemun Premium"
+            }
+        ];
+
+        // Funkce pro inicializaci mapy (volána Google Maps API)
+        window.initMap = function() {
+            console.log("Google Maps API načteno.");
+        };
+
+        let maps = {}; // Objekt pro ukládání instancí map
+
+        const palette = { blue: '#00A5E3', teal: '#8DD7BF', pink: '#FF96C5', red: '#FF5768', orange: '#FFBF65', yellow: '#F8E16C', purple: '#A020F0' };
+
+        const wrapLabel = (label) => {
+            const maxLength = 16;
+            if (typeof label !== 'string' || label.length <= maxLength) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + ' ' + word).trim().length > maxLength) { lines.push(currentLine.trim()); currentLine = word; }
+                else { currentLine = (currentLine + ' ' + word).trim(); }
+            }
+            if (currentLine) lines.push(currentLine.trim());
+            return lines;
+        };
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            return Array.isArray(label) ? label.join(' ') : label;
+        };
+
+        // Celkové náklady na ubytování pro všechny osoby (z dat itineráře)
+        const totalAccommodationCost = 20537;
+        const numTravelers = 3;
+
+        const abuDhabiTransportPerPerson = Math.round(3100 / numTravelers);
+        const abuDhabiActivitiesPerPerson = Math.round(2480 / numTravelers);
+        const abuDhabiFoodPerPerson = Math.round(4030 / numTravelers);
+        const abuDhabiMiscPerPerson = Math.round(620 / numTravelers);
+
+        const plannedBudgetValues = { // Per person
+            'Ubytování': Math.round(totalAccommodationCost / numTravelers),
+            'Doprava (Meziměsto)': 7000 + abuDhabiTransportPerPerson,
+            'Doprava (Místní)': 3612,
+            'Aktivity': 4100 + abuDhabiActivitiesPerPerson,
+            'Jídlo': 7700 + abuDhabiFoodPerPerson,
+            'Různé': 5920 + abuDhabiMiscPerPerson
+        };
+
+        const plannedBudgetLabels = Object.keys(plannedBudgetValues);
+        const plannedBudgetChartData = Object.values(plannedBudgetValues);
+
+        let estimatedCostPerPerson = plannedBudgetChartData.reduce((sum, val) => sum + val, 0);
+        estimatedCostPerPerson = Math.round(estimatedCostPerPerson);
+
+        // Currency exchange rates to CZK
+        const exchangeRatesToCZK = {
+            'CZK': 1,
+            'EUR': 25, // Approximate
+            'USD': 23, // Approximate
+            'AED': 6.2, // From previous prompt
+            'KRW': 0.0197 // From previous prompt (1 CZK = 50.67 KRW)
+        };
+
+        // --- Utility Functions for Modals ---
+        function showCustomConfirm(message, onConfirmCallback) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const msgElement = document.getElementById('confirm-message');
+            const yesBtn = document.getElementById('confirm-yes');
+            const noBtn = document.getElementById('confirm-no');
+
+            msgElement.textContent = message;
+            modal.classList.remove('hidden');
+
+            const handleYes = () => {
+                onConfirmCallback(true);
+                modal.classList.add('hidden');
+                yesBtn.removeEventListener('click', handleYes);
+                noBtn.removeEventListener('click', handleNo);
+            };
+
+            const handleNo = () => {
+                onConfirmCallback(false);
+                modal.classList.add('hidden');
+                yesBtn.removeEventListener('click', handleYes);
+                noBtn.removeEventListener('click', handleNo);
+            };
+
+            yesBtn.addEventListener('click', handleYes);
+            noBtn.addEventListener('click', handleNo);
+        }
+
+        function showCustomAlert(message) {
+            const modal = document.getElementById('custom-alert-modal');
+            const msgElement = document.getElementById('alert-message');
+            const okBtn = document.getElementById('alert-ok');
+
+            msgElement.textContent = message;
+            modal.classList.remove('hidden');
+
+            const handleOk = () => {
+                modal.classList.add('hidden');
+                okBtn.removeEventListener('click', handleOk);
+            };
+
+            okBtn.addEventListener('click', handleOk);
+        }
+
+        // --- Firebase Auth Functions ---
+        async function initializeFirebase() {
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.warn("Firebase config is empty. Running in offline mode.");
+                isAuthReady = true;
+                document.getElementById('user-id-display').textContent = `Uživatel: Offline (Firebase konfigurace chybí)`;
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('show-login-form-btn').classList.add('hidden');
+                document.getElementById('logout-btn').classList.add('hidden');
+                // Hide editable content sections if Firebase is not active
+                document.querySelectorAll('.editable-content').forEach(el => el.classList.add('hidden'));
+                return;
+            }
+
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                storage = getStorage(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        isUserAnonymous = user.isAnonymous;
+                        console.log(`DEBUG: Uživatel přihlášen. ID: ${currentUserId}, Anonymní: ${isUserAnonymous}`);
+
+                        if (user.isAnonymous) {
+                            document.getElementById('user-id-display').textContent = `Uživatel: Anonymní (${currentUserId.substring(0, 8)}...)`;
+                            document.getElementById('show-login-form-btn').classList.remove('hidden');
+                            document.getElementById('logout-btn').classList.add('hidden');
+                            // Hide editable content for anonymous users
+                            document.querySelectorAll('.editable-content').forEach(el => el.classList.add('hidden'));
+                        } else {
+                            document.getElementById('user-id-display').textContent = `Uživatel: ${user.email}`;
+                            document.getElementById('show-login-form-btn').classList.add('hidden');
+                            document.getElementById('logout-btn').classList.remove('hidden');
+                            // Show editable content for authenticated users
+                            document.querySelectorAll('.editable-content').forEach(el => el.classList.remove('hidden'));
+                        }
+                        isAuthReady = true;
+                        document.getElementById('login-modal').classList.add('hidden');
+                        document.getElementById('main-content').classList.remove('hidden');
+                        console.log(`DEBUG: Auth state ready. Setting up Firestore listeners.`);
+                        setupFirestoreListeners(); // Setup listeners AFTER auth is ready
+                    } else {
+                        // If no user, try to sign in anonymously
+                        try {
+                            await signInAnonymously(auth);
+                            console.log("DEBUG: Signed in anonymously via onAuthStateChanged fallback.");
+                        } catch (anonError) {
+                            console.error("DEBUG: Error signing in anonymously during fallback:", anonError);
+                            currentUserId = null;
+                            isUserAnonymous = true; // Still consider them anonymous for UI purposes if auth failed
+                            isAuthReady = true;
+                            document.getElementById('user-id-display').textContent = `Uživatel: Offline (Firebase není aktivní, chyba autentizace)`;
+                            document.getElementById('login-modal').classList.add('hidden');
+                            document.getElementById('main-content').classList.remove('hidden');
+                            document.getElementById('show-login-form-btn').classList.add('hidden');
+                            document.getElementById('logout-btn').classList.add('hidden');
+                            document.querySelectorAll('.editable-content').forEach(el => el.classList.add('hidden'));
+                        }
+                    }
+                });
+
+                // Attempt initial sign-in if no user is already active
+                if (!auth.currentUser) {
+                    if (initialAuthToken) {
+                        try {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                            console.log("DEBUG: Signed in with custom token (initial).");
+                        } catch (error) {
+                            console.error("DEBUG: Error signing in with custom token (initial), falling back to anonymous:", error);
+                            // onAuthStateChanged will handle the anonymous sign-in if custom token fails
+                        }
+                    } else {
+                        // onAuthStateChanged will handle the anonymous sign-in if no token
+                    }
+                }
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                isAuthReady = true;
+                document.getElementById('user-id-display').textContent = `Uživatel: Offline (Firebase není aktivní, chyba inicializace)`;
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                document.getElementById('show-login-form-btn').classList.add('hidden');
+                document.getElementById('logout-btn').classList.add('hidden');
+                document.querySelectorAll('.editable-content').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const loginError = document.getElementById('login-error');
+            loginError.textContent = '';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                document.getElementById('login-modal').classList.add('hidden');
+                showCustomAlert('Přihlášení úspěšné!');
+            } catch (error) {
+                console.error("Login error:", error);
+                loginError.textContent = `Chyba přihlášení: ${error.message}`;
+            }
+        }
+
+        // Removed handleRegister function as the button is removed.
+        // If you need registration functionality later, you'll need to re-add the button and this function.
+
+        async function handleLogout() {
+            showCustomConfirm('Opravdu se chcete odhlásit?', async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await signOut(auth);
+                        // After logging out, immediately sign in anonymously
+                        await signInAnonymously(auth);
+                        showCustomAlert('Úspěšně odhlášeno.');
+                        document.getElementById('login-modal').classList.add('hidden'); // Ensure modal is hidden
+                    } catch (error) {
+                        console.error("Logout error:", error);
+                        showCustomAlert(`Chyba odhlášení: ${error.message}`);
+                    }
+                }
+            });
+        }
+
+        function showLoginForm() {
+            if (auth.currentUser && !auth.currentUser.isAnonymous) {
+                showCustomAlert('Jste již přihlášeni jako registrovaný uživatel.');
+                return;
+            }
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('email-input').value = '';
+            document.getElementById('password-input').value = '';
+        }
+
+        // --- Firestore & Storage Functions ---
+        // Changed to point to the public collection with 'data' segment
+        function getDiaryEntriesCollectionRef() {
+            return collection(db, `artifacts/${appId}/public/data/diaryEntries`);
+        }
+
+        // Changed to point to the public collection with 'data' segment
+        function getBudgetItemsCollectionRef() {
+            return collection(db, `artifacts/${appId}/public/data/budgetItems`);
+        }
+
+        function getPhotoStorageRef(photoId) {
+            return ref(storage, `artifacts/${appId}/public/photos/${photoId}`);
+        }
+
+        async function uploadPhoto(file, ownerId) {
+            const photoId = Date.now().toString() + '-' + file.name;
+            const storageRef = getPhotoStorageRef(photoId);
+            const metadata = { customMetadata: { ownerId: ownerId } };
+            const snapshot = await uploadBytes(storageRef, file, metadata);
+            const photoUrl = await getDownloadURL(snapshot.ref);
+            return { id: photoId, url: photoUrl };
+        }
+
+        async function addDiaryEntry(dayId, text, photoFiles, photoCaption) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro přidání záznamu se musíte přihlásit registrovaným účtem.');
+                return;
+            }
+
+            const photos = [];
+            for (const file of photoFiles) {
+                try {
+                    const photo = await uploadPhoto(file, currentUserId);
+                    photos.push(photo);
+                } catch (error) {
+                    console.error("Error uploading photo:", error);
+                    showCustomAlert(`Chyba při nahrávání fotografie: ${file.name}: ${error.message}`);
+                    return; // Stop if any photo upload fails
+                }
+            }
+
+            try {
+                await addDoc(getDiaryEntriesCollectionRef(), {
+                    day: dayId,
+                    text: text,
+                    photos: photos, // Store array of photo objects
+                    photoCaption: photoCaption,
+                    timestamp: Date.now(),
+                    ownerId: currentUserId
+                });
+                showCustomAlert('Záznam deníku úspěšně přidán!');
+            } catch (error) {
+                console.error("Error adding diary entry:", error);
+                showCustomAlert(`Chyba při přidávání záznamu: ${error.message}`);
+            }
+        }
+
+        async function updateDiaryEntry(entryId, dayId, text, newPhotoFiles, photoCaption, existingPhotos) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro úpravu záznamu se musíte přihlásit registrovaným účtem.');
+                return;
+            }
+
+            let updatedPhotos = [...(existingPhotos || [])]; // Start with existing photos
+
+            for (const file of newPhotoFiles) {
+                try {
+                    const photo = await uploadPhoto(file, currentUserId);
+                    updatedPhotos.push(photo); // Append new photos
+                } catch (error) {
+                    console.error("Error uploading new photo:", error);
+                    showCustomAlert(`Chyba při nahrávání nové fotografie: ${file.name}: ${error.message}`);
+                    return;
+                }
+            }
+
+            try {
+                const entryRef = doc(getDiaryEntriesCollectionRef(), entryId);
+                await updateDoc(entryRef, {
+                    text: text,
+                    photos: updatedPhotos, // Update with new array
+                    photoCaption: photoCaption,
+                    timestamp: Date.now(),
+                    ownerId: currentUserId // Ensure ownerId remains
+                });
+                showCustomAlert('Záznam deníku úspěšně aktualizován!');
+            } catch (error) {
+                console.error("Error updating diary entry:", error);
+                showCustomAlert(`Chyba při aktualizaci záznamu: ${error.message}`);
+            }
+        }
+
+        async function deleteDiaryEntry(entryId, photos) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro smazání záznamu se musíte přihlásit registrovaným účtem.');
+                return;
+            }
+
+            showCustomConfirm('Opravdu chcete smazat tento záznam deníku a všechny jeho fotografie?', async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        // Delete associated photos from Storage
+                        if (photos && photos.length > 0) {
+                            for (const photo of photos) {
+                                try {
+                                    await deleteObject(getPhotoStorageRef(photo.id));
+                                } catch (error) {
+                                    console.warn(`Could not delete photo ${photo.id}:`, error);
+                                }
+                            }
+                        }
+                        // Delete the diary entry document
+                        await deleteDoc(doc(getDiaryEntriesCollectionRef(), entryId));
+                        showCustomAlert('Záznam deníku úspěšně smazán!');
+                    } catch (error) {
+                        console.error("Error deleting diary entry:", error);
+                        showCustomAlert(`Chyba při mazání záznamu: ${error.message}`);
+                    }
+                }
+            });
+        }
+
+        function convertCurrency(amount, fromCurrency, toCurrency = 'CZK') {
+            if (fromCurrency === toCurrency) {
+                return amount;
+            }
+            const amountInCZK = amount * exchangeRatesToCZK[fromCurrency];
+            return amountInCZK / exchangeRatesToCZK[toCurrency];
+        }
+
+        async function addBudgetItem(dayId, description, category, people, currency, amount, amountCZK) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro přidání položky rozpočtu se musíte přihlásit registrovaným účtem.');
+                return;
+            }
+            try {
+                await addDoc(getBudgetItemsCollectionRef(), { // Používáme veřejnou kolekci
+                    day: dayId, // Associate with day
+                    description: description,
+                    category: category,
+                    people: parseInt(people),
+                    currency: currency,
+                    amount: parseFloat(amount),
+                    amountCZK: parseFloat(amountCZK),
+                    timestamp: Date.now(),
+                    ownerId: currentUserId // Důležité: Uložení ownerId do dokumentu
+                });
+                showCustomAlert('Položka rozpočtu úspěšně přidána!');
+            } catch (error) {
+                console.error("Error adding budget item:", error);
+                showCustomAlert(`Chyba při přidávání položky: ${error.message}`);
+            }
+        }
+
+        async function updateBudgetItem(itemId, dayId, description, category, people, currency, amount, amountCZK) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro úpravu položky rozpočtu se musíte přihlásit registrovaným účtem.');
+                return;
+            }
+            try {
+                const itemRef = doc(getBudgetItemsCollectionRef(), itemId); // Používáme veřejnou kolekci
+                await updateDoc(itemRef, {
+                    day: dayId, // Ensure day is updated/maintained
+                    description: description,
+                    category: category,
+                    people: parseInt(people),
+                    currency: currency,
+                    amount: parseFloat(amount),
+                    amountCZK: parseFloat(amountCZK),
+                    timestamp: Date.now(),
+                    ownerId: currentUserId // Důležité: Ujistěte se, že ownerId zůstává
+                });
+                showCustomAlert('Položka rozpočtu úspěšně aktualizována!');
+            } catch (error) {
+                console.error("Error updating budget item:", error);
+                showCustomAlert(`Chyba při aktualizaci položky: ${error.message}`);
+            }
+        }
+
+        async function deleteBudgetItem(itemId) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro smazání položky rozpočtu se musíte přihlásit registrovaným účtem.');
+                return;
+            }
+            showCustomConfirm('Opravdu chcete smazat tuto položku rozpočtu?', async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await deleteDoc(doc(getBudgetItemsCollectionRef(), itemId)); // Používáme veřejnou kolekci
+                        showCustomAlert('Položka rozpočtu úspěšně smazána!');
+                    } catch (error) {
+                        console.error("Error deleting budget item:", error);
+                        showCustomAlert(`Chyba při mazání položky: ${error.message}`);
+                    }
+                }
+            });
+        }
+
+        // --- Render Functions ---
+        function renderDiaryEntries(dayId, entries) {
+            const diaryContainer = document.getElementById(`diary-entries-day-${dayId}`);
+            if (!diaryContainer) return;
+
+            diaryContainer.innerHTML = ''; // Clear existing entries
+
+            // Filter entries by day and sort by timestamp
+            const dayEntries = entries.filter(entry => entry.day === dayId).sort((a, b) => a.timestamp - b.timestamp);
+
+            if (dayEntries.length === 0) {
+                diaryContainer.innerHTML = '<p class="text-gray-500 text-center">Žádné záznamy deníku pro tento den.</p>';
+            } else {
+                dayEntries.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'bg-blue-50 p-3 rounded-lg shadow-sm mb-3 relative';
+
+                    // Determine if edit/delete buttons should be visible
+                    const showEditDeleteButtons = !isUserAnonymous && entry.ownerId === currentUserId;
+                    const editDeleteClass = showEditDeleteButtons ? '' : 'hidden';
+
+                    let photosHtml = '';
+                    if (entry.photos && entry.photos.length > 0) {
+                        photosHtml = '<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-2">';
+                        entry.photos.forEach(photo => {
+                            photosHtml += `<img src="${photo.url}" alt="${entry.photoCaption || 'Diary photo'}" class="w-full h-32 object-cover rounded-md cursor-pointer diary-photo" data-caption="${entry.photoCaption || ''}">`;
+                        });
+                        photosHtml += '</div>';
+                    }
+
+                    entryDiv.innerHTML = `
+                        <p class="text-gray-800 mb-2">${entry.text}</p>
+                        ${photosHtml}
+                        ${entry.photoCaption ? `<p class="text-sm text-gray-600 italic mt-1">${entry.photoCaption}</p>` : ''}
+                        <p class="text-xs text-gray-400 mt-2">Zaznamenáno: ${new Date(entry.timestamp).toLocaleString()}</p>
+                        <div class="absolute top-2 right-2 flex space-x-1 ${editDeleteClass}">
+                            <button class="text-blue-600 hover:text-blue-800 edit-diary-btn" data-entry-id="${entry.id}" data-day-id="${entry.day}" data-text="${entry.text}" data-photos='${JSON.stringify(entry.photos || [])}' data-photocaption="${entry.photoCaption || ''}" data-owner-id="${entry.ownerId}">Upravit</button>
+                            <button class="text-red-600 hover:text-red-800 delete-diary-btn" data-entry-id="${entry.id}" data-photos='${JSON.stringify(entry.photos || [])}' data-owner-id="${entry.ownerId}">Smazat</button>
+                        </div>
+                    `;
+                    diaryContainer.appendChild(entryDiv);
+                });
+            }
+            setupDiaryEntryListeners(); // Re-attach listeners to newly rendered elements
+            setupLightboxListeners();
+        }
+
+        function renderBudgetItemsForDay(dayId, items) {
+            const budgetListContainer = document.getElementById(`budget-items-list-day-${dayId}`);
+            if (!budgetListContainer) return;
+
+            budgetListContainer.innerHTML = ''; // Clear existing items
+
+            const dayItems = items.filter(item => item.day === dayId).sort((a, b) => a.timestamp - b.timestamp);
+
+            if (dayItems.length === 0) {
+                budgetListContainer.innerHTML = '<p class="text-gray-500 text-center">Žádné položky rozpočtu pro tento den.</p>';
+            } else {
+                const table = document.createElement('table');
+                table.className = 'min-w-full bg-white border border-gray-200 rounded-lg shadow-md';
+                table.innerHTML = `
+                    <thead>
+                        <tr class="bg-gray-100 border-b">
+                            <th class="py-2 px-4 text-left text-sm font-semibold text-gray-600">Popis</th>
+                            <th class="py-2 px-4 text-left text-sm font-semibold text-gray-600">Kategorie</th>
+                            <th class="py-2 px-4 text-left text-sm font-semibold text-gray-600">Osob</th>
+                            <th class="py-2 px-4 text-left text-sm font-semibold text-gray-600">Částka</th>
+                            <th class="py-2 px-4 text-left text-sm font-semibold text-gray-600">CZK (na osobu)</th>
+                            <th class="py-2 px-4 text-left text-sm font-semibold text-gray-600">Akce</th>
+                        </tr>
+                    </thead>
+                    <tbody id="budget-table-body-day-${dayId}">
+                    </tbody>
+                `;
+                budgetListContainer.appendChild(table);
+                const tbody = document.getElementById(`budget-table-body-day-${dayId}`);
+
+                dayItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-gray-50';
+                    const amountPerPersonCZK = item.amountCZK / item.people;
+
+                    // Determine if edit/delete buttons should be visible
+                    const showEditDeleteButtons = !isUserAnonymous && item.ownerId === currentUserId;
+                    const editDeleteClass = showEditDeleteButtons ? '' : 'hidden';
+
+                    row.innerHTML = `
+                        <td class="py-2 px-4 text-sm text-gray-700">${item.description}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">${item.category}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">${item.people}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">${item.amount.toFixed(2)} ${item.currency}</td>
+                        <td class="py-2 px-4 text-sm text-gray-700">${amountPerPersonCZK.toFixed(2)} CZK</td>
+                        <td class="py-2 px-4 text-sm text-gray-700 flex space-x-2 ${editDeleteClass}">
+                            <button class="text-blue-600 hover:text-blue-800 edit-budget-btn" data-item-id="${item.id}" data-day-id="${dayId}" data-owner-id="${item.ownerId}">Upravit</button>
+                            <button class="text-red-600 hover:text-red-800 delete-budget-btn" data-item-id="${item.id}" data-day-id="${dayId}" data-owner-id="${item.ownerId}">Smazat</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            setupBudgetItemListenersForDay(dayId); // Setup listeners for this specific day's items
+        }
+
+        let budgetDonutChartInstance = null;
+        let costBarChartInstance = null;
+
+        function updateBudgetCharts(actualBudgetItems) {
+            const actualSpentPerCategory = {};
+            plannedBudgetLabels.forEach(label => actualSpentPerCategory[label] = 0);
+
+            actualBudgetItems.forEach(item => {
+                if (plannedBudgetLabels.includes(item.category)) {
+                    actualSpentPerCategory[item.category] += (item.amountCZK / item.people);
+                } else {
+                    // Handle categories not in plannedBudgetLabels if necessary, or add them dynamically
+                    actualSpentPerCategory['Různé'] += (item.amountCZK / item.people); // Fallback to miscellaneous
+                }
+            });
+
+            const actualSpentChartData = Object.values(actualSpentPerCategory);
+            const totalActualSpent = actualSpentChartData.reduce((sum, val) => sum + val, 0);
+
+            document.getElementById('estimated-cost-display').textContent = `${Math.round(totalActualSpent)} Kč`;
+            const budgetStatusText = document.getElementById('budget-status-text');
+            if (budgetStatusText) {
+                budgetStatusText.textContent = totalActualSpent <= estimatedCostPerPerson ? 'Úspěšně v rámci limitu 45 000 Kč!' : `Překročeno o ${Math.round(totalActualSpent - estimatedCostPerPerson)} Kč!`;
+                budgetStatusText.classList.toggle('text-green-600', totalActualSpent <= estimatedCostPerPerson);
+                budgetStatusText.classList.toggle('text-red-600', totalActualSpent > estimatedCostPerPerson);
+            }
+
+            // Update Donut Chart
+            const budgetDonutCtx = document.getElementById('budgetDonutChart')?.getContext('2d');
+            if (budgetDonutCtx) {
+                if (budgetDonutChartInstance) {
+                    budgetDonutChartInstance.destroy();
+                }
+                budgetDonutChartInstance = new Chart(budgetDonutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: plannedBudgetLabels,
+                        datasets: [{
+                            label: 'Skutečné čerpání (Kč)',
+                            data: actualSpentChartData,
+                            backgroundColor: Object.values(palette),
+                            borderColor: '#ffffff',
+                            borderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: true, text: 'Skutečné čerpání rozpočtu (na osobu)', font: { size: 16 } },
+                            tooltip: { callbacks: { title: tooltipTitleCallback } }
+                        }
+                    }
+                });
+            }
+
+            // Update Bar Chart (Planned vs Actual)
+            const costBarCtx = document.getElementById('costBarChart')?.getContext('2d');
+            if (costBarCtx) {
+                if (costBarChartInstance) {
+                    costBarChartInstance.destroy();
+                }
+
+                // Ensure labels are in the same order for both planned and actual
+                const orderedActualSpent = plannedBudgetLabels.map(label => actualSpentPerCategory[label]);
+
+                costBarChartInstance = new Chart(costBarCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: plannedBudgetLabels.map(wrapLabel),
+                        datasets: [
+                            {
+                                label: 'Plánované náklady (Kč)',
+                                data: plannedBudgetChartData,
+                                backgroundColor: Object.values(palette).map(color => `${color}80`), // Lighter shade for planned
+                                borderColor: Object.values(palette),
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Skutečné náklady (Kč)',
+                                data: orderedActualSpent,
+                                backgroundColor: Object.values(palette).map(color => color), // Solid color for actual
+                                borderColor: Object.values(palette),
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: true, text: 'Plánované vs. Skutečné náklady (na osobu)', font: { size: 16 } },
+                            tooltip: { callbacks: { title: tooltipTitleCallback } }
+                        },
+                        scales: {
+                            x: { beginAtZero: true, stacked: false, grid: { display: false } },
+                            y: { stacked: false, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupDiaryEntryListeners() {
+            document.querySelectorAll('.edit-diary-btn').forEach(button => {
+                button.onclick = (e) => {
+                    // Check if the user is the owner of the item AND not anonymous
+                    if (isUserAnonymous || e.target.dataset.ownerId !== currentUserId) {
+                        showCustomAlert('Pro úpravu záznamu musíte být přihlášen(a) registrovaným účtem a být vlastníkem záznamu.');
+                        return;
+                    }
+                    const dayId = parseInt(e.target.dataset.dayId);
+                    const entryId = e.target.dataset.entryId;
+                    const text = e.target.dataset.text;
+                    const photos = JSON.parse(e.target.dataset.photos || '[]'); // Parse photos array
+                    const photoCaption = e.target.dataset.photocaption;
+
+                    const diaryForm = document.getElementById(`diary-form-day-${dayId}`);
+                    if (diaryForm) {
+                        diaryForm.querySelector('textarea[name="diary-text"]').value = text;
+                        diaryForm.querySelector('input[name="photo-caption"]').value = photoCaption;
+                        // No specific display for existing photos in the edit form, new ones will be appended.
+
+                        diaryForm.querySelector('button[type="submit"]').textContent = 'Uložit úpravy';
+                        const cancelBtn = diaryForm.querySelector('.cancel-diary-edit-btn');
+                        if (cancelBtn) cancelBtn.classList.remove('hidden');
+
+                        currentDiaryEntryToEdit = { id: entryId, day: dayId, photos: photos };
+                    }
+                };
+            });
+
+            document.querySelectorAll('.delete-diary-btn').forEach(button => {
+                button.onclick = (e) => {
+                    // Check if the user is the owner of the item AND not anonymous
+                    if (isUserAnonymous || e.target.dataset.ownerId !== currentUserId) {
+                        showCustomAlert('Pro smazání záznamu musíte být přihlášen(a) registrovaným účtem a být vlastníkem záznamu.');
+                        return;
+                    }
+                    const entryId = e.target.dataset.entryId;
+                    const photos = JSON.parse(e.target.dataset.photos || '[]'); // Get photos array
+                    deleteDiaryEntry(entryId, photos);
+                };
+            });
+
+            document.addEventListener('submit', async (e) => {
+            const form = e.target && e.target.closest('.add-diary-form');
+            if (!form) return;
+            e.preventDefault();
+            try {
+                const dayId = form.getAttribute('data-day-id');
+                const textEl = form.querySelector('textarea[name="diary-text"]') || form.querySelector('textarea');
+                const fileInput = form.querySelector('input[type="file"]');
+                const text = (textEl && textEl.value ? textEl.value : '').trim();
+                const files = (fileInput && fileInput.files) ? Array.from(fileInput.files) : [];
+
+                if (form.classList && form.classList.contains('editing')) {
+                    const entryId = form.getAttribute('data-entry-id');
+                    if (typeof updateDiaryEntry === 'function') {
+                        await updateDiaryEntry(entryId, dayId, text, files);
+                    } else if (typeof addDiaryEntry === 'function') {
+                        await addDiaryEntry(dayId, text, files, '');
+                    }
+                    form.classList.remove('editing');
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.textContent = 'Přidat záznam';
+                    const cancelBtn = form.querySelector('.cancel-diary-edit-btn');
+                    if (cancelBtn) cancelBtn.classList.add('hidden');
+                } else {
+                    if (typeof addDiaryEntry === 'function') {
+                        await addDiaryEntry(dayId, text, files, '');
+                    }
+                }
+                form.reset();
+            } catch (err) {
+                console.error('add-diary-form submit error:', err);
+                if (typeof showCustomAlert === 'function') showCustomAlert('Nepodařilo se uložit záznam deníku.');
+            }
+        });
+document.querySelectorAll('.cancel-diary-edit-btn').forEach(button => {
+                button.onclick = (e) => {
+                    const form = e.target.closest('form');
+                    form.reset();
+                    form.querySelector('button[type="submit"]').textContent = 'Přidat záznam';
+                    e.target.classList.add('hidden');
+                    currentDiaryEntryToEdit = null;
+                };
+            });
+        }
+
+        function setupBudgetItemListenersForDay(dayId) {
+            const form = document.querySelector(`.add-budget-form[data-day-id="${dayId}"]`);
+            if (!form) return;
+
+            const descriptionInput = form.querySelector('input[name="description"]');
+            const categorySelect = form.querySelector('select[name="category"]');
+            const peopleSelect = form.querySelector('select[name="people"]');
+            const currencySelect = form.querySelector('select[name="currency"]');
+            const amountInput = form.querySelector('input[name="amount"]');
+            const amountCzkInput = form.querySelector('input[name="amountCZK"]');
+            const saveBtn = form.querySelector('.save-budget-item-btn');
+            const cancelBtn = form.querySelector('.cancel-edit-budget-btn');
+
+            const updateCzkAmount = () => {
+                const amount = parseFloat(amountInput.value);
+                const currency = currencySelect.value;
+                if (!isNaN(amount) && currency) {
+                    amountCzkInput.value = convertCurrency(amount, currency).toFixed(2);
+                } else {
+                    amountCzkInput.value = '';
+                }
+            };
+
+            amountInput.oninput = updateCzkAmount;
+            currencySelect.onchange = updateCzkAmount;
+
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                if (isUserAnonymous) {
+                    showCustomAlert('Pro přidání/úpravu položky rozpočtu se musíte přihlásit registrovaným účtem.');
+                    return;
+                }
+
+                const description = descriptionInput.value.trim();
+                const category = categorySelect.value;
+                const people = peopleSelect.value;
+                const currency = currencySelect.value;
+                const amount = amountInput.value;
+                const amountCZK = amountCzkInput.value;
+
+                if (!description || !category || !people || !currency || !amount || isNaN(parseFloat(amount))) {
+                    showCustomAlert('Prosím, vyplňte všechna pole a zadejte platnou částku.');
+                    return;
+                }
+
+                if (currentBudgetItemToEdit && currentBudgetItemToEdit.day === dayId) {
+                    await updateBudgetItem(currentBudgetItemToEdit.id, dayId, description, category, people, currency, amount, amountCZK);
+                    currentBudgetItemToEdit = null;
+                    saveBtn.textContent = 'Uložit položku';
+                    cancelBtn.classList.add('hidden');
+                } else {
+                    await addBudgetItem(dayId, description, category, people, currency, amount, amountCZK);
+                }
+                // Clear form
+                form.reset();
+                amountCzkInput.value = ''; // Ensure CZK field is cleared
+            };
+
+            cancelBtn.onclick = () => {
+                form.reset();
+                amountCzkInput.value = '';
+                saveBtn.textContent = 'Uložit položku';
+                cancelBtn.classList.add('hidden');
+                currentBudgetItemToEdit = null;
+            };
+
+            // Setup edit/delete buttons for this specific day's items
+            document.querySelectorAll(`#budget-items-list-day-${dayId} .edit-budget-btn`).forEach(button => {
+                button.onclick = (e) => {
+                    // Check if the user is the owner of the item AND not anonymous
+                    if (isUserAnonymous || e.target.dataset.ownerId !== currentUserId) {
+                        showCustomAlert('Pro úpravu položky musíte být přihlášen(a) registrovaným účtem a být vlastníkem položky.');
+                        return;
+                    }
+                    const itemId = e.target.dataset.itemId;
+                    const item = budgetItems.find(i => i.id === itemId);
+                    if (item) {
+                        descriptionInput.value = item.description;
+                        categorySelect.value = item.category;
+                        peopleSelect.value = item.people;
+                        currencySelect.value = item.currency;
+                        amountInput.value = item.amount;
+                        amountCzkInput.value = item.amountCZK.toFixed(2);
+
+                        saveBtn.textContent = 'Uložit úpravy';
+                        cancelBtn.classList.remove('hidden');
+                        currentBudgetItemToEdit = item;
+                    }
+                };
+            });
+
+            document.querySelectorAll(`#budget-items-list-day-${dayId} .delete-budget-btn`).forEach(button => {
+                button.onclick = (e) => {
+                    // Check if the user is the owner of the item AND not anonymous
+                    if (isUserAnonymous || e.target.dataset.ownerId !== currentUserId) {
+                        showCustomAlert('Pro smazání položky musíte být přihlášen(a) registrovaným účtem a být vlastníkem položky.');
+                        return;
+                    }
+                    const itemId = e.target.dataset.itemId;
+                    deleteBudgetItem(itemId);
+                };
+            });
+        }
+
+
+        function setupLightboxListeners() {
+            document.querySelectorAll('.diary-photo').forEach(img => {
+                img.addEventListener('click', (e) => {
+                    openLightbox(e.target.src, e.target.dataset.caption);
+                });
+            });
+        }
+
+        function openLightbox(src, caption) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            lightboxImg.src = src;
+            lightboxCaption.textContent = caption;
+            lightbox.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        // --- Main Initialization ---
+        let allDiaryEntries = [];
+        let budgetItems = [];
+
+        function setupFirestoreListeners() {
+            if (!db || !currentUserId) {
+                console.warn("DEBUG: Firestore not initialized or userId not available for listeners. Skipping Firestore listeners setup.");
+                return;
+            }
+            console.log(`DEBUG: Setting up Firestore listeners for user ID: ${currentUserId}`);
+
+            // Diary Entries Listener - now listening to the public collection
+            const diaryQuery = query(getDiaryEntriesCollectionRef());
+            onSnapshot(diaryQuery, (snapshot) => {
+                allDiaryEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log(`DEBUG: Načteno ${allDiaryEntries.length} záznamů deníku.`);
+                itineraryData.forEach(item => {
+                    renderDiaryEntries(item.day, allDiaryEntries);
+                });
+            }, (error) => {
+                console.error("Error listening to diary entries:", error);
+                showCustomAlert(`Chyba při načítání deníku: ${error.message}`);
+            });
+
+            // Budget Items Listener - now listening to the public collection
+            const budgetQuery = query(getBudgetItemsCollectionRef());
+            onSnapshot(budgetQuery, (snapshot) => {
+                budgetItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log(`DEBUG: Načteno ${budgetItems.length} položek rozpočtu.`);
+                // Render budget items for each day
+                itineraryData.forEach(item => {
+                    renderBudgetItemsForDay(item.day, budgetItems);
+                });
+                // Update overall budget charts
+                updateBudgetCharts(budgetItems);
+            }, (error) => {
+                console.error("Error listening to budget items:", error);
+                showCustomAlert(`Chyba při načítání rozpočtu: ${error.message}`);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("DEBUG: DOMContentLoaded event fired. Initializing application.");
+
+            await initializeFirebase(); // Initialize Firebase and handle initial auth state
+
+            const timelineContainer = document.getElementById('timeline-container');
+            timelineContainer.innerHTML = '';
+
+            const fragment = document.createDocumentFragment();
+
+            itineraryData.forEach(item => {
+                const timelineItemDiv = document.createElement('div');
+                timelineItemDiv.className = 'timeline-item';
+
+                let linksHtml = Object.keys(item.links).length > 0 ? '<div class="mt-4"><h5 class="font-bold text-gray-800">Užitečné odkazy:</h5><ul class="list-disc list-inside">' : '';
+                for (const [text, url] of Object.entries(item.links)) {
+                    linksHtml += `<li><a href="${url}" target="_blank" class="text-blue-600 hover:underline">${text}</a></li>`;
+                }
+                linksHtml += Object.keys(item.links).length > 0 ? '</ul></div>' : '';
+
+                const transportHtml = item.transport ? `<div class="mt-4"><h5 class="font-bold text-gray-800">Doprava:</h5><p class="text-gray-600">${item.transport}</p></div>` : '';
+
+                const mapPlaceholderHtml = item.mapData ? `<div class="map-placeholder" data-day-id="${item.day}"></div>` : '';
+
+                const hotelInfoHtml = item.hotel ? `<div class="mt-4"><h5 class="font-bold text-gray-800">Ubytování:</h5><p class="text-gray-600">${item.hotel}</p></div>` : '';
+
+                timelineItemDiv.innerHTML = `
+                    <div class="timeline-dot"></div>
+                    <div class="cursor-pointer timeline-header">
+                        <h4 class="text-lg md:text-xl font-bold" style="color: #004E89;">${item.day}. Den: ${item.title}</h4>
+                        <p class="text-sm font-semibold text-gray-500 mb-2">${item.date}</p>
+                    </div>
+                    <div class="details-content pl-4 border-l-2 border-gray-200">
+                         <div class="prose max-w-none text-gray-700">
+                            <p>${item.details}</p>
+                            ${transportHtml}
+                            ${linksHtml}
+                            ${hotelInfoHtml}
+                            ${mapPlaceholderHtml}
+
+                            <div class="mt-6 border-t pt-4">
+                                <h5 class="text-xl font-bold mb-3" style="color: #004E89;">Cestovní deník pro tento den</h5>
+                                <div id="diary-entries-day-${item.day}" class="mb-4">
+                                    <p class="text-gray-500 text-center">Načítání záznamů deníku...</p>
+                                </div>
+                                <div class="add-diary-section editable-content ${isUserAnonymous ? 'hidden' : ''}">
+                                    <h6 class="text-lg font-bold mb-2">Přidat/Upravit záznam</h6>
+                                    <form class="add-diary-form" data-day-id="${item.day}" id="diary-form-day-${item.day}">
+                                        <textarea name="diary-text" class="w-full p-2 border rounded-md mb-2" rows="3" placeholder="Napište svůj zážitek..."></textarea>
+                                        <input type="file" name="diary-photo" accept="image/*" class="w-full p-2 border rounded-md mb-2"><div class="flex space-x-2">
+                                            <button type="submit" class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-4 rounded-lg">Přidat záznam</button>
+                                            <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg cancel-diary-edit-btn hidden">Zrušit</button>
+                                        </div>
+                                <div class="mt-6 border-t pt-4">
+                                    <h5 class="text-xl font-bold mb-3" style="color: #004E89;">Soukromá poznámka k tomuto dni</h5>
+                                    <div class="space-y-2">
+                                        <textarea class="w-full p-2 border rounded-md" rows="3" placeholder="Soukromá poznámka (viditelná jen pro přihlášené e‑mailem)" id="private-note-${item.day}"></textarea>
+                                        <div class="flex items-center justify-between">
+                                            <small id="private-note-hint-${item.day}" class="text-gray-500">Pro úpravy se přihlaste e‑mailem a heslem.</small>
+                                            <button class="save-private-note-btn bg-indigo-600 text-white py-2 px-4 rounded-lg" data-day-id="${item.day}">Uložit poznámku</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- NEW BUDGET SECTION FOR EACH DAY -->
+                            <div class="mt-6 border-t pt-4">
+                                <h5 class="text-xl font-bold mb-3" style="color: #004E89;">Rozpočet pro tento den</h5>
+                                <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200 budget-input-section editable-content ${isUserAnonymous ? 'hidden' : ''}">
+                                    <h3 class="text-lg font-bold mb-4" style="color: #002D62;">Přidat/Upravit položku rozpočtu</h3>
+                                    <form class="add-budget-form" data-day-id="${item.day}">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="budget-description-${item.day}" class="block text-sm font-medium text-gray-700">Popis</label>
+                                                <input type="text" id="budget-description-${item.day}" name="description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
+                                            </div>
+                                            <div>
+                                                <label for="budget-category-${item.day}" class="block text-sm font-medium text-gray-700">Kategorie</label>
+                                                <select id="budget-category-${item.day}" name="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
+                                                    <option value="">Vyberte kategorii</option>
+                                                    <option value="Ubytování">Ubytování</option>
+                                                    <option value="Doprava (Meziměsto)">Doprava (Meziměsto)</option>
+                                                    <option value="Doprava (Místní)">Doprava (Místní)</option>
+                                                    <option value="Aktivity">Aktivity</option>
+                                                    <option value="Jídlo">Jídlo</option>
+                                                    <option value="Různé">Různé</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="budget-people-${item.day}" class="block text-sm font-medium text-gray-700">Počet osob</label>
+                                                <select id="budget-people-${item.day}" name="people" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="budget-currency-${item.day}" class="block text-sm font-medium text-gray-700">Měna</label>
+                                                <select id="budget-currency-${item.day}" name="currency" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
+                                                    <option value="CZK">CZK</option>
+                                                    <option value="EUR">EUR</option>
+                                                    <option value="USD">USD</option>
+                                                    <option value="AED">AED</option>
+                                                    <option value="KRW">KRW</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="budget-amount-${item.day}" class="block text-sm font-medium text-gray-700">Částka</label>
+                                                <input type="number" id="budget-amount-${item.day}" name="amount" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
+                                            </div>
+                                            <div>
+                                                <label for="budget-amount-czk-${item.day}" class="block text-sm font-medium text-gray-700">Částka v CZK</label>
+                                                <input type="text" id="budget-amount-czk-${item.day}" name="amountCZK" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 flex justify-end space-x-2">
+                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg save-budget-item-btn">Uložit položku</button>
+                                            <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg cancel-edit-budget-btn hidden">Zrušit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div id="budget-items-list-day-${item.day}" class="space-y-4">
+                                    <p class="text-gray-500 text-center">Načítání položek rozpočtu...</p>
+                                </div>
+                            </div>
+                         </div>
+                    </div>
+                `;
+                fragment.appendChild(timelineItemDiv);
+            });
+            timelineContainer.appendChild(fragment);
+
+            // Initial rendering of diary entries and budget items (will be updated by onSnapshot)
+            itineraryData.forEach(item => {
+                renderDiaryEntries(item.day, []); // Render empty initially
+                renderBudgetItemsForDay(item.day, []); // Render empty initially
+            });
+
+            document.querySelectorAll('.timeline-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const dayIndex = parseInt(header.parentElement.querySelector('.timeline-dot').parentElement.querySelector('h4').textContent.split('.')[0]) - 1;
+                    const currentDayData = itineraryData[dayIndex];
+
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        header.parentElement.querySelector('.timeline-dot').style.backgroundColor = '#00A5E3';
+                    } else {
+                        document.querySelectorAll('.details-content').forEach(el => {
+                            if (el !== content) {
+                                el.style.maxHeight = null;
+                            }
+                        });
+                        document.querySelectorAll('.timeline-dot').forEach(dot => dot.style.backgroundColor = '#00A5E3');
+
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        header.parentElement.querySelector('.timeline-dot').style.backgroundColor = '#FF5768';
+
+                        if (currentDayData.mapData && typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+                            const mapPlaceholder = content.querySelector(`.map-placeholder[data-day-id="${currentDayData.day}"]`);
+
+                            if (mapPlaceholder) {
+                                let mapInstance = maps[`day-${currentDayData.day}`];
+                                if (!mapInstance) {
+                                    const mapDiv = document.createElement('div');
+                                    mapDiv.className = 'map-container mt-4 rounded-lg overflow-hidden shadow-md';
+                                    mapDiv.id = `map-day-${currentDayData.day}`;
+                                    mapPlaceholder.appendChild(mapDiv);
+
+                                    mapInstance = new google.maps.Map(mapDiv, {
+                                        center: currentDayData.mapData.center,
+                                        zoom: currentDayData.mapData.zoom,
+                                        mapTypeControl: false,
+                                        streetViewControl: false,
+                                        fullscreenControl: false
+                                    });
+
+                                    const infoWindow = new google.maps.InfoWindow();
+                                    currentDayData.mapData.markers.forEach(markerData => {
+                                        const marker = new google.maps.Marker({
+                                            position: { lat: markerData.lat, lng: markerData.lng },
+                                            map: mapInstance,
+                                            title: markerData.title
+                                        });
+                                        marker.addListener("click", () => {
+                                            infoWindow.setContent(`<strong>${markerData.title}</strong><br>${markerData.description}`);
+                                            infoWindow.open(mapInstance, marker);
+                                        });
+                                    });
+                                    maps[`day-${currentDayData.day}`] = mapInstance;
+                                }
+
+                                google.maps.event.trigger(mapInstance, 'resize');
+                                mapInstance.setCenter(currentDayData.mapData.center);
+
+                            } else {
+                                console.error("DEBUG: Kontejner mapy nenalezen pro ID:", `map-day-${currentDayData.day}`, "Placeholder not found.");
+                            }
+                        } else {
+                            console.error("DEBUG: Google Maps API není načteno nebo data mapy nenalezena.");
+                        }
+                        // Re-adjust max-height after content potentially changes (e.g., diary entries load)
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    tabs.forEach(item => item.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabPanes.forEach(pane => {
+                        pane.id === `${tabId}-content` ? pane.classList.remove('hidden') : pane.classList.add('hidden');
+                    });
+                });
+            });
+
+            // Initial budget chart rendering (will be updated by onSnapshot)
+            updateBudgetCharts([]);
+
+            const lightbox = document.getElementById('lightbox');
+            const closeLightboxBtn = document.getElementById('close-lightbox');
+
+            if (closeLightboxBtn && lightbox) {
+                closeLightboxBtn.addEventListener('click', () => {
+                    lightbox.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+                lightbox.addEventListener('click', (e) => {
+                    if (e.target === lightbox) {
+                        lightbox.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
+                });
+            } else {
+                console.error("DEBUG: Lightbox elements not found. Lightbox functionality may be impaired.");
+            }
+
+            // --- Auth UI Event Listeners ---
+            document.getElementById('login-form-content').addEventListener('submit', handleLogin);
+            // Removed the event listener for the register button
+            document.getElementById('anonymous-login-btn-modal').addEventListener('click', async () => {
+                try {
+                    await signInAnonymously(auth);
+                    document.getElementById('login-modal').classList.add('hidden');
+                } catch (error) {
+                    console.error("Anonymous login error:", error);
+                    document.getElementById('login-error').textContent = `Chyba anonymního přihlášení: ${error.message}`;
+                }
+            });
+            document.getElementById('show-login-form-btn').addEventListener('click', showLoginForm);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        });
+    
+        // --- Diary photos subcollection helpers ---
+        function startDiaryPhotosListener(entryId) {
+            if (!currentUserId) return;
+            const photosContainer = document.getElementById(`photos-${entryId}`);
+            if (!photosContainer) return;
+
+            const photosRef = collection(db, `artifacts/${appId}/public/data/diary/${entryId}/photos`);
+            onSnapshot(photosRef, (snap) => {
+                const photos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                                        .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                if (photos.length === 0) {
+                    photosContainer.innerHTML = '<p class="text-gray-500">K tomuto záznamu zatím nejsou fotografie.</p>';
+                } else {
+                    photosContainer.innerHTML = '<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-2">' +
+                        photos.map(p => `
+                            <figure class="bg-white rounded shadow-sm p-2">
+                                <img src="${p.url}" alt="${escapeHtml(p.caption || '')}" class="w-full h-32 object-cover rounded cursor-pointer diary-photo">
+                                ${p.caption ? `<figcaption class="text-sm text-gray-600 mt-1">${escapeHtml(p.caption)}</figcaption>` : ''}
+                                ${(!isUserAnonymous && currentUserId === p.ownerId) ? `<button class="delete-photo-btn text-xs text-red-600 mt-1" data-entry-id="${entryId}" data-photo-id="${p.id}">Smazat</button>` : ''}
+                            </figure>
+                        `).join('') + '</div>';
+                }
+            });
+        }
+
+        async function addDiaryPhoto(entryId, file, caption) {
+            if (!currentUserId || isUserAnonymous) {
+                showCustomAlert('Pro přidání fotografie se přihlaste registrovaným účtem.');
+                return;
+            }
+            const photoId = Date.now().toString() + '-' + (file.name || 'photo');
+            const storageRef = getPhotoStorageRef(photoId);
+            const metadata = { customMetadata: { ownerId: currentUserId } };
+            const snapshot = await uploadBytes(storageRef, file, metadata);
+            const url = await getDownloadURL(snapshot.ref);
+            await addDoc(collection(db, `artifacts/${appId}/public/data/diary/${entryId}/photos`), {
+                url, caption: caption || '', createdAt: Date.now(), ownerId: currentUserId
+            });
+        }
+
+        async function deleteDiaryPhoto(entryId, photoId) {
+            if (!currentUserId || isUserAnonymous) return;
+            await deleteDoc(doc(db, `artifacts/${appId}/public/data/diary/${entryId}/photos/${photoId}`));
+        }
+
+        // Delegated handlers for add/delete photos
+        document.addEventListener('submit', async (e) => {
+            const form = e.target && e.target.closest('.add-photo-form');
+            if (!form) return;
+            e.preventDefault();
+            const entryId = form.getAttribute('data-entry-id');
+            const fileInput = form.querySelector('input[name="photo-file"]');
+            const captionInput = form.querySelector('input[name="photo-caption"]');
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+            try {
+                await addDiaryPhoto(entryId, fileInput.files[0], (captionInput?.value || '').trim());
+                form.reset();
+            } catch (err) {
+                console.error(err);
+                showCustomAlert('Nepodařilo se nahrát fotografii.');
+            }
+        });
+
+        document.addEventListener('click', async (e) => {
+            const btn = e.target && e.target.closest('.delete-photo-btn');
+            if (!btn) return;
+            try {
+                await deleteDiaryPhoto(btn.getAttribute('data-entry-id'), btn.getAttribute('data-photo-id'));
+            } catch (err) {
+                console.error(err);
+                showCustomAlert('Nepodařilo se smazat fotografii.');
+            }
+        });
+
+        // --- Private itinerary note (email/password users only) ---
+        function isEmailPasswordUser() {
+            try {
+                const u = (typeof auth !== 'undefined' && auth && auth.currentUser) ? auth.currentUser
+                        : (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser
+                        : null;
+                return !!(u && !u.isAnonymous && Array.isArray(u.providerData) && u.providerData.some(p => p.providerId === 'password'));
+            } catch (e) { return false; }
+        }
+
+        function ensurePrivateNoteUIState() {
+            const emailUser = isEmailPasswordUser();
+            document.querySelectorAll('.save-private-note-btn').forEach(btn => {
+                btn.disabled = !emailUser;
+                btn.classList.toggle('opacity-50', !emailUser);
+            });
+            document.querySelectorAll('[id^="private-note-hint-"]').forEach(hint => {
+                hint.textContent = emailUser ? 'Poznámka je soukromá a uložena jen pro váš účet.' : 'Pro úpravy se přihlaste e‑mailem a heslem.';
+            });
+        }
+
+        async function loadPrivateNote(dayId) {
+            if (!currentUserId) return;
+            const noteRef = doc(db, `artifacts/${appId}/users/${currentUserId}/itinerary/${dayId}/privateNotes/note`);
+            try {
+                const snap = await getDoc(noteRef);
+                const el = document.getElementById(`private-note-${dayId}`);
+                if (el && snap.exists()) el.value = snap.data().text || '';
+            } catch (e) { console.warn('loadPrivateNote error', e); }
+        }
+
+        async function savePrivateNote(dayId, text) {
+            if (!currentUserId || !isEmailPasswordUser()) {
+                showCustomAlert('Poznámku lze upravovat jen po přihlášení e‑mailem a heslem.');
+                return;
+            }
+            const noteRef = doc(db, `artifacts/${appId}/users/${currentUserId}/itinerary/${dayId}/privateNotes/note`);
+            await setDoc(noteRef, { text, updatedAt: Date.now(), ownerId: currentUserId }, { merge: true });
+            showCustomAlert('Soukromá poznámka uložena.');
+        }
+
+        document.addEventListener('click', async (e) => {
+            const btn = e.target && e.target.closest('.save-private-note-btn');
+            if (!btn) return;
+            const dayId = btn.getAttribute('data-day-id');
+            const el = document.getElementById(`private-note-${dayId}`);
+            if (!dayId || !el) return;
+            try { await savePrivateNote(dayId, (el.value || '').trim()); }
+            catch (err) { console.error(err); showCustomAlert('Nepodařilo se uložit poznámku.'); }
+        });
+
+        document.addEventListener('itinerary-rendered', () => {
+            document.querySelectorAll('[id^="private-note-"]').forEach(el => {
+                const dayId = el.id.replace('private-note-', '');
+                loadPrivateNote(dayId);
+            });
+            ensurePrivateNoteUIState();
+        });
+
+        try {
+            if (typeof onAuthStateChanged === 'function' && typeof auth !== 'undefined') {
+                onAuthStateChanged(auth, () => { try { document.dispatchEvent(new Event('auth-state-changed')); } catch(_){} });
+            }
+        } catch(_) {}
+        document.addEventListener('auth-state-changed', ensurePrivateNoteUIState);
+
+        </script>
+    
+<script>
+if (typeof window.initMap !== 'function') {
+  window.initMap = function(){ try { console.warn('initMap fallback called'); } catch(_){}};
+}
+</script>
+
+</body>
+</html>

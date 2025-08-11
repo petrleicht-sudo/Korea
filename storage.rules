@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+    function validImageUpload() {
+      return request.resource.size < 10 * 1024 * 1024
+             && request.resource.contentType.matches('image/.*');
+    }
+
+    // Legacy/public photos path
+    match /artifacts/{appId}/public/photos/{photoId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+                   && request.auth.uid == request.resource.metadata.ownerId
+                   && validImageUpload();
+      allow delete: if isSignedIn() && request.auth.uid == resource.metadata.ownerId;
+    }
+  }
+}
